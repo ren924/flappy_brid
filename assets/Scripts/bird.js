@@ -22,7 +22,6 @@ cc.Class({
             default: null,
             type: cc.AudioClip,
         },
-        playGame: false,
         CollManager: null,
     },
 
@@ -59,7 +58,8 @@ cc.Class({
     
 
     update(dt) {
-        if(this.playGame){
+        // 当游戏状态为进行中时开始运动
+        if(this.game.gameStatus == GameStatus.Game_Playing){
             this.bird_speed -= 0.05;
             this.node.y += this.bird_speed;
 
@@ -88,8 +88,9 @@ cc.Class({
         this.game.gameStatus = GameStatus.Game_Playing;
         // 开始游戏时重置分数
         this.game.resetScore();
+        this.game.spawnNewPipe();
+        // 开始游戏时重置水管初始位置
         this.game.resetPipePos();
-        this.playGame = true;
         // 隐藏开始按钮
         this.gameStartBtn.node.active = false;                                   
         //  隐藏游戏结束图
@@ -111,7 +112,7 @@ cc.Class({
 
      gameOver(){
         this.game.gameOver();
-        this.playGame = false;
+        // 关闭碰撞检测
         this.CollManager.enabled = false;
         this.gameOverSp.active = true;
         // 显示开始游戏按钮

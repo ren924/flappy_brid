@@ -1,11 +1,5 @@
 import {GameStatus}  from './enum';
 const Bird = require('bird');
-// 游戏状态
-// const GameStatus = {
-//     Game_Ready:0,    //准备
-//     Game_Playing:1, // 进行中
-//     Game_Over: 2,   //结束
-// }
 
 cc.Class({
     extends: cc.Component,
@@ -54,9 +48,8 @@ cc.Class({
     },
 
     start () {
-        this.spawnNewPipe();
         // 初始化bird
-        this.node.getChildByName("Bird").getComponent('bird').init(this)
+        this.node.getChildByName("Bird").getComponent('bird').init(this);
     },
 
     update (dt) {
@@ -72,31 +65,30 @@ cc.Class({
 
         // 若游戏结束，则不进行后续操作
         if(this.gameStatus == GameStatus.Game_Over) return
-        // 移动水管
-        this.pipe.x -= 1;
-        if(this.pipe.x == -this.node.getChildByName("Bird").width){
-            this.gainScore();
+        
+        // 
+        let pipesChild = this.node.getChildByName('Pipes').children;
+        for(let c = 0; c < pipesChild.length; c++){
+            // 移动水管
+            pipesChild[c].x -= 1;
+            // 判断鸟越过水管
+            if(pipesChild[c].x == -this.node.getChildByName("Bird").width){
+                this.gainScore();
+            }
+            // 生成新水管
+            if(pipesChild[c].x == -50){this.spawnNewPipe();}  ;
+            // 销毁水管
+            if(pipesChild[c].x <= -170){
+                pipesChild[c].destroy();  
+            }
         }
-        if(this.pipe.x <= -170){
-            this.pipe.x = 170;
-            let minY = -120,maxY = 120;
-            this.pipe.y = minY + Math.random()*(maxY - minY);
-            this.pipe.destroy();
-            this.spawnNewPipe();
-        }
-
     },
     // 生成新水管
     spawnNewPipe: function(){
-        // let newPipe = cc.instantiate(this.pipePrefab);
-        // this.node.addChild(newPipe);
-        //  // 为新节点设置位置
-        // newPipe.setPosition(position);
-
         this.pipe = cc.instantiate(this.pipePrefab);
         this.node.getChildByName('Pipes').addChild(this.pipe)
         this.pipe.x = 170;
-        let minY = -120,maxY = 120;
+        let minY = -100,maxY = 100;
         this.pipe.y = minY + Math.random()*(maxY - minY);
     },
     // 游戏结束
