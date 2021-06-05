@@ -1,5 +1,7 @@
 import { GameStatus } from './enum';
 const Bird = require('bird');
+const Pipes = require('pipes');
+const AudioMusic = require('./audio');
 
 cc.Class({
     extends: cc.Component,
@@ -17,6 +19,14 @@ cc.Class({
             default: null,
             type: Bird
         },
+        PipeSp: {
+            default: null,
+            type: Pipes
+        },
+        AudioMusic: {
+            default: null,
+            type: AudioMusic
+        },
         // ScoreLabel引用
         ScoreLabel: {
             default: null,
@@ -27,14 +37,10 @@ cc.Class({
             default: null,
             type: cc.AudioClip
         },
-        // 水管预制资源
-        pipePrefab: {
+        // 开始游戏按钮
+        gameStartBtn: {
             default: null,
-            type: cc.Prefab
-        },
-        pipe: {
-            default: null,
-            type: cc.Node
+            type: cc.Button,
         },
         // 游戏得分
         gameScore: 0,
@@ -44,12 +50,17 @@ cc.Class({
     },
 
     onLoad() {
-
+        this.AudioMusic = this.node.getChildByName("AudioMusic").getComponent('audio');
+        this.BirdSp = this.node.getChildByName("Bird").getComponent('bird');
+        this.PipeSp = this.node.getChildByName("Pipes").getComponent('pipes')
+        // 为开始游戏按钮绑定事件
+        this.gameStartBtn.node.on(cc.Node.EventType.TOUCH_END, this.touchGameStartBtn, this);
     },
 
     start() {
         // 初始化bird
-        this.node.getChildByName("Bird").getComponent('bird').init(this);
+        this.BirdSp.init(this);
+        this.PipeSp.init(this);
     },
 
     update(dt) {
@@ -63,45 +74,35 @@ cc.Class({
         if (this.Bg0.x <= -288) this.Bg0.x = 288;
         if (this.Bg1.x <= -288) this.Bg1.x = 288;
 
-        // 若游戏结束，则不进行后续操作
-        if (this.gameStatus == GameStatus.Game_Over) return;
-
-        let pipesChild = this.node.getChildByName('Pipes').children;
-        for (let c = 0; c < pipesChild.length; c++) {
-            // 移动水管
-            pipesChild[c].x -= 1;
-            // 判断鸟越过水管
-            if (pipesChild[c].x == -this.node.getChildByName("Bird").width) {
-                this.gainScore();
-            }
-            // 生成新水管
-            if (pipesChild[c].x == -50) { this.spawnNewPipe(); };
-            // 销毁水管
-            if (pipesChild[c].x <= -170) {
-                pipesChild[c].destroy();
-            }
-        }
     },
-    // 生成新水管
-    spawnNewPipe: function () {
-        this.pipe = cc.instantiate(this.pipePrefab);
-        this.node.getChildByName('Pipes').addChild(this.pipe)
-        this.pipe.x = 170;
-        let minY = -100, maxY = 100;
-        this.pipe.y = minY + Math.random() * (maxY - minY);
+    // 触摸开始游戏按钮，开始游戏
+    touchGameStartBtn: function (event) {
+        // 改变游戏状态
+        this.gameStatus = GameStatus.Game_Playing;
+        // 开始游戏时重置分数
+        this.resetScore();
+        // 隐藏开始按钮
+        this.gameStartBtn.node.active = false;
+        // 小鸟开始游戏
+        this.BirdSp.birdGameStart();
+        // 开始游戏是重置水管位置
+        this.PipeSp.resetPipePos();
     },
     // 游戏结束
     gameOver: function () {
         this.gameStatus = GameStatus.Game_Over;
         this.ScoreLabel.string = this.gameScore.toString();
-        // this.node.getChildByName('Pipes').children.destroy()
+        // 显示开始游戏按钮
+        this.gameStartBtn.node.active = true;
+        // 播放游戏结束音效
+        this.AudioMusic.playMusic('gameOver');
     },
     // 更新分数
     gainScore: function (pos) {
         this.gameScore++;
         this.ScoreLabel.string = this.gameScore.toString();
         // 播放得分音效
-        cc.audioEngine.playEffect(this.scoreAudio, false);
+        this.AudioMusic.playMusic('score');
     },
 
     // 重置分数
@@ -110,13 +111,11 @@ cc.Class({
         this.ScoreLabel.string = this.gameScore.toString();
     },
 
-    // 开始游戏时，重置水管位置
-    resetPipePos: function () {
-        let pipesChild = this.node.getChildByName('Pipes').children;
-        for (let c = 0; c < pipesChild.length; c++) {
-            pipesChild[c].destroy();
-        }
-        this.spawnNewPipe();
+    // 播放小鸟飞行音乐
+    playFlySound: function () {
+        // 若游戏不在进行中则不播放音乐 
+        if (this.gameStatus != GameStatus.Game_Playing) return;
+        this.AudioMusic.playMusic('fly');
     }
 
 });
