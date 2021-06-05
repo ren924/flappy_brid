@@ -9,7 +9,7 @@ cc.Class({
             type: cc.Prefab
         },
 
-        pipe_speed: 0,
+        pipeSpeed: 0,
     },
 
     // LIFE-CYCLE CALLBACKS:

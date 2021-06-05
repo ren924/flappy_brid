@@ -50,17 +50,15 @@ cc.Class({
     },
 
     onLoad() {
+        this.BirdSp.init(this);
+        this.PipeSp.init(this);
         this.AudioMusic = this.node.getChildByName("AudioMusic").getComponent('audio');
-        this.BirdSp = this.node.getChildByName("Bird").getComponent('bird');
-        this.PipeSp = this.node.getChildByName("Pipes").getComponent('pipes')
         // 为开始游戏按钮绑定事件
         this.gameStartBtn.node.on(cc.Node.EventType.TOUCH_END, this.touchGameStartBtn, this);
     },
 
     start() {
-        // 初始化bird
-        this.BirdSp.init(this);
-        this.PipeSp.init(this);
+
     },
 
     update(dt) {
@@ -90,6 +88,7 @@ cc.Class({
     },
     // 游戏结束
     gameOver: function () {
+        
         this.gameStatus = GameStatus.Game_Over;
         this.ScoreLabel.string = this.gameScore.toString();
         // 显示开始游戏按钮

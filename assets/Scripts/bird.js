@@ -3,7 +3,7 @@ cc.Class({
     extends: cc.Component,
     properties: {
         // 小鸟移动速度
-        bird_speed: 0,
+        birdSpeed: 0,
         // 游戏结束图片
         gameOverSp: {
             default: null,
@@ -40,8 +40,8 @@ cc.Class({
     update(dt) {
         // 当游戏状态为进行中时开始运动
         if (this.game.gameStatus == GameStatus.Game_Playing) {
-            this.bird_speed -= 0.05;
-            this.node.y += this.bird_speed;
+            this.birdSpeed -= 0.05;
+            this.node.y += this.birdSpeed;
             // 判断边界
             if (this.node.y >= 256 || this.node.y <= -256) {
                 this.gameOver();
@@ -54,12 +54,12 @@ cc.Class({
     onTouchStart(event) {
         // 播放小鸟飞行音乐
         this.game.playFlySound();
-        this.bird_speed = 2;
+        this.birdSpeed = 2;
     },
 
     // 触摸结束时
     onTouchEnd(event) {
-        this.bird_speed = 0;
+        this.birdSpeed = 0;
     },
 
     // 点击开始游戏按钮后
