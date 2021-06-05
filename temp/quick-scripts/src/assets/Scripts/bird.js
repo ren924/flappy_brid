@@ -1,0 +1,89 @@
+"use strict";
+cc._RF.push(module, '1d26eS2JE5BS5Am8laEHIZE', 'bird');
+// Scripts/bird.js
+
+"use strict";
+
+var _enum = require("./enum");
+
+cc.Class({
+  "extends": cc.Component,
+  properties: {
+    // 小鸟移动速度
+    birdSpeed: 0,
+    // 游戏结束图片
+    gameOverSp: {
+      "default": null,
+      type: cc.Node
+    }
+  },
+  // LIFE-CYCLE CALLBACKS:
+  onLoad: function onLoad() {
+    // 监听Canvas触摸事件
+    var touchReceiver = cc.Canvas.instance.node;
+    touchReceiver.on('touchstart', this.onTouchStart, this);
+    touchReceiver.on('touchend', this.onTouchEnd, this); // 默认不显示游戏结束图
+
+    this.gameOverSp.active = false; // 碰撞检测
+
+    this.CollManager = cc.director.getCollisionManager();
+  },
+  init: function init(game) {
+    this.game = game;
+  },
+  onDestroy: function onDestroy() {
+    // 取消触摸事件监听
+    var touchReceiver = cc.Canvas.instance.node;
+    touchReceiver.off('touchstart', this.onTouchStart, this);
+    touchReceiver.off('touchend', this.onTouchEnd, this);
+  },
+  start: function start() {},
+  update: function update(dt) {
+    // 当游戏状态为进行中时开始运动
+    if (this.game.gameStatus == _enum.GameStatus.Game_Playing) {
+      this.birdSpeed -= 0.05;
+      this.node.y += this.birdSpeed; // 判断边界
+
+      if (this.node.y >= 256 || this.node.y <= -256) {
+        this.gameOver();
+      }
+    }
+  },
+  // 触摸开始时
+  onTouchStart: function onTouchStart(event) {
+    // 播放小鸟飞行音乐
+    this.game.playFlySound();
+    this.birdSpeed = 2;
+  },
+  // 触摸结束时
+  onTouchEnd: function onTouchEnd(event) {
+    this.birdSpeed = 0;
+  },
+  // 点击开始游戏按钮后
+  birdGameStart: function birdGameStart() {
+    //  隐藏游戏结束图
+    this.gameOverSp.active = false; // 重置小鸟位置
+
+    this.node.y = 0; // 开启碰撞检测
+
+    this.CollManager.enabled = true;
+  },
+
+  /**
+   * 当碰撞产生的时候调用
+   * @param  {Collider} other 产生碰撞的另一个碰撞组件
+   * @param  {Collider} self  产生碰撞的自身的碰撞组件
+   */
+  onCollisionEnter: function onCollisionEnter(other, self) {
+    this.gameOver();
+  },
+  gameOver: function gameOver() {
+    this.game.gameOver(); // 关闭碰撞检测
+
+    this.CollManager.enabled = false; // 显示游戏结束图
+
+    this.gameOverSp.active = true;
+  }
+});
+
+cc._RF.pop();
